@@ -45,8 +45,6 @@ body{
     );
 }
 
-/* BACKGROUND GLOW */
-
 body::before{
 
     content:"";
@@ -93,8 +91,6 @@ body::after{
     opacity:0.18;
 }
 
-/* MAIN CONTAINER */
-
 .container{
 
     width:1000px;
@@ -122,8 +118,6 @@ body::after{
     box-shadow:
     0 10px 40px rgba(0,0,0,0.45);
 }
-
-/* HEADER */
 
 .header{
 
@@ -168,9 +162,6 @@ body::after{
     font-size:20px;
 
     font-weight:bold;
-
-    box-shadow:
-    0 0 25px rgba(255,77,141,0.35);
 }
 
 .header h1{
@@ -178,11 +169,7 @@ body::after{
     color:white;
 
     font-size:28px;
-
-    font-weight:600;
 }
-
-/* CHAT AREA */
 
 .chat-box{
 
@@ -201,16 +188,9 @@ body::after{
     scroll-behavior:smooth;
 }
 
-/* SMOOTH SCROLLBAR */
-
 .chat-box::-webkit-scrollbar{
 
     width:7px;
-}
-
-.chat-box::-webkit-scrollbar-track{
-
-    background:transparent;
 }
 
 .chat-box::-webkit-scrollbar-thumb{
@@ -224,8 +204,6 @@ body::after{
 
     border-radius:20px;
 }
-
-/* MESSAGE */
 
 .message{
 
@@ -242,18 +220,7 @@ body::after{
     word-break:break-word;
 
     font-size:15px;
-
-    transition:0.2s;
-
-    position:relative;
 }
-
-.message:hover{
-
-    transform:translateY(-2px);
-}
-
-/* USER MESSAGE */
 
 .user{
 
@@ -269,12 +236,7 @@ body::after{
     color:white;
 
     border-bottom-right-radius:6px;
-
-    box-shadow:
-    0 4px 18px rgba(255,77,141,0.25);
 }
-
-/* AI MESSAGE */
 
 .ai{
 
@@ -287,14 +249,7 @@ body::after{
     border:1px solid rgba(255,255,255,0.05);
 
     border-bottom-left-radius:6px;
-
-    backdrop-filter:blur(10px);
-
-    box-shadow:
-    0 4px 18px rgba(0,0,0,0.15);
 }
-
-/* INPUT AREA */
 
 .input-area{
 
@@ -302,7 +257,7 @@ body::after{
 
     display:flex;
 
-    gap:15px;
+    gap:12px;
 
     border-top:1px solid rgba(255,255,255,0.05);
 
@@ -333,11 +288,9 @@ input::placeholder{
     color:#d1d5db;
 }
 
-/* BUTTON */
-
 button{
 
-    padding:18px 28px;
+    padding:18px 26px;
 
     border:none;
 
@@ -359,19 +312,21 @@ button{
     cursor:pointer;
 
     transition:0.25s;
-
-    box-shadow:
-    0 4px 18px rgba(255,77,141,0.25);
 }
 
 button:hover{
 
-    transform:
-    translateY(-2px)
-    scale(1.03);
+    transform:scale(1.03);
 }
 
-/* TYPING EFFECT */
+#micBtn{
+
+    width:65px;
+
+    font-size:22px;
+
+    transition:0.3s ease;
+}
 
 .typing{
 
@@ -411,24 +366,20 @@ button:hover{
     animation-delay:0.4s;
 }
 
-/* ANIMATIONS */
-
 @keyframes smoothFade{
 
     from{
 
         opacity:0;
 
-        transform:
-        translateY(8px);
+        transform:translateY(8px);
     }
 
     to{
 
         opacity:1;
 
-        transform:
-        translateY(0);
+        transform:translateY(0);
     }
 }
 
@@ -474,8 +425,12 @@ button:hover{
         <input
             type="text"
             id="message"
-            placeholder="Type your message..."
+            placeholder="Type or speak your message..."
         >
+
+        <button id="micBtn" onclick="startListening()">
+            🎤
+        </button>
 
         <button onclick="sendMessage()">
             Send
@@ -499,8 +454,6 @@ async function sendMessage(){
 
     let chatBox = document.getElementById("chatBox");
 
-    // USER MESSAGE
-
     chatBox.innerHTML += `
         <div class="message user">
             ${message}
@@ -508,8 +461,6 @@ async function sendMessage(){
     `;
 
     input.value = "";
-
-    // TYPING ANIMATION
 
     let typingId = "typing-" + Date.now();
 
@@ -532,8 +483,6 @@ async function sendMessage(){
         let data = await response.text();
 
         document.getElementById(typingId).remove();
-
-        // AI RESPONSE
 
         chatBox.innerHTML += `
             <div class="message ai">
@@ -563,8 +512,6 @@ function formatResponse(text){
         .replace(/\n/g,"<br>");
 }
 
-/* ENTER KEY SUPPORT */
-
 document.getElementById("message")
 .addEventListener("keypress", function(event){
 
@@ -573,6 +520,58 @@ document.getElementById("message")
         sendMessage();
     }
 });
+
+function startListening(){
+
+    const recognition =
+        new(window.SpeechRecognition ||
+            window.webkitSpeechRecognition)();
+
+    recognition.lang = "en-US";
+
+    recognition.start();
+
+    let micBtn =
+        document.getElementById("micBtn");
+
+    micBtn.innerHTML = "Listening... 🎙️";
+
+    micBtn.style.width = "190px";
+
+    micBtn.style.background =
+        "linear-gradient(135deg,#ff004c,#ff7b00)";
+
+    recognition.onresult = function(event){
+
+        const transcript =
+            event.results[0][0].transcript;
+
+        document.getElementById("message").value =
+            transcript;
+
+        micBtn.innerHTML = "🎤";
+
+        micBtn.style.width = "65px";
+
+        sendMessage();
+    };
+
+    recognition.onerror = function(){
+
+        micBtn.innerHTML = "🎤";
+
+        micBtn.style.width = "65px";
+
+        alert("Voice recognition error");
+    };
+
+    recognition.onend = function(){
+
+        micBtn.innerHTML = "🎤";
+
+        micBtn.style.width = "65px";
+    };
+}
 
 </script>
 
