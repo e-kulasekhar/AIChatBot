@@ -1,7 +1,9 @@
 package com.example.SpringBoot._UsingLangChain4jPractice.Config;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,16 +16,36 @@ import dev.langchain4j.service.AiServices;
 @Configuration
 public class AiConfig {
 
-    @Value("${groq.api.key}")
-    private String apiKey;
+    // MULTIPLE API KEYS
+
+    private final List<String> apiKeys = Arrays.asList(
+
+            System.getenv("GROQ_API_KEY_1"),
+
+            System.getenv("GROQ_API_KEY_2"),
+
+            System.getenv("GROQ_API_KEY_3")
+    );
+
+    // CURRENT KEY INDEX
+
+    private final AtomicInteger currentKeyIndex =
+            new AtomicInteger(0);
 
     @Bean
     public OpenAiChatModel chatModel() {
 
+        String currentApiKey =
+                apiKeys.get(currentKeyIndex.get());
+
         return OpenAiChatModel.builder()
+
                 .baseUrl("https://api.groq.com/openai/v1")
-                .apiKey(apiKey)
-                .modelName("llama-3.3-70b-versatile")
+
+                .apiKey(currentApiKey)
+
+                .modelName("llama-3.1-8b-instant")
+
                 .build();
     }
 
@@ -31,8 +53,14 @@ public class AiConfig {
     public Assistant assistant(OpenAiChatModel model) {
 
         return AiServices.builder(Assistant.class)
+
                 .chatLanguageModel(model)
-                .chatMemory(MessageWindowChatMemory.withMaxMessages(20))
+
+                .chatMemory(
+                        MessageWindowChatMemory
+                                .withMaxMessages(20)
+                )
+
                 .build();
     }
 }
